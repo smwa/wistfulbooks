@@ -1,0 +1,14 @@
+{
+  "short_name": "librivox_libre",
+  "name": "Librivox Libre",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF"
+}
