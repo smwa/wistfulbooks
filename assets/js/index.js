@@ -77,6 +77,7 @@ $(document).ready(function() {
     var path = $(ev.target).closest('td').find(".book_path").val();
     $.get("./catalog/books/" + path + "/index.json")
     .done(function(data) {
+        if (typeof data === 'string') data = JSON.parse(data);
         APlayerObject.list.clear();
         var authors = data.authors.map(function (author) { return author.name; }).join(', ');
         var baseUrl = "./catalog/books/" + path + "/";
