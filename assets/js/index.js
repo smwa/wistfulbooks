@@ -51,6 +51,9 @@ $(document).ready(function() {
 
   $(document).on('click', ".book_info", function (ev) {
     $('.book-info-modal-description').html('<img src="assets/img/loading.svg">');
+    $('.book-info-modal-title').text('Loading...');
+    $('.book-info-modal-cover-art').css('display', 'none');
+    $('.book-info-modal-supporters').html('');
     var path = $(ev.target).closest('td').find(".book_path").val();
     $.get("./catalog/books/" + path + "/index.json")
     .done(function(data) {
@@ -59,7 +62,6 @@ $(document).ready(function() {
         $('.book-info-modal-description').html(data.description);
         var coverArtPath = './catalog/books/' + path + '/cover.jpg';
         $('.book-info-modal-cover-art').attr('src', coverArtPath).css('display', '');
-        $('.book-info-modal-supporters').html('');
         data.supporters.forEach(function (supporter) {
             var supporterListItem = $('<li>')
                 .append($('<span>').text(supporter.role + " "))
