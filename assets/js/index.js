@@ -40,8 +40,6 @@ $(document).ready(function() {
             {
                 'title': 'Actions',
                 'responsivePriority': 7,
-                'orderable': false,
-                'searchable': false,
                 'render': function(bookPath) {
                     return "<input type='hidden' class='book_path' value='" + bookPath + "'>"
                          + startButtonGroup
