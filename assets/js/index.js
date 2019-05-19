@@ -133,7 +133,7 @@ $(document).ready(function() {
   function getButtonForBookOfflineAvailablity(book) {
     var store = window.localStorage;
     if (!store) {
-        alert("This browser doesn't support localStorage and won't support offline books. Let the developer know that you would like this resolved.");
+        return '';
     }
     var queued = store.getItem('offlineQueued');
     var downloaded = store.getItem('offlineDownloaded');
@@ -146,16 +146,18 @@ $(document).ready(function() {
     return "<button type='button' title='Download for offline use' aria-label='Download for offline use' class='download_book btn btn-outline-dark'>Store Offline</button>";
   }
 
-  var toDownload = [];
+  var toDownload = {};
 
   function startDownload(bookPath) {
     $.get("./catalog/books/" + bookPath + "/index.json")
     .done(function(data) {
       if (typeof data === 'string') data = JSON.parse(data);
+      toDownload[bookPath] = [];
       var baseUrl = "./catalog/books/" + bookPath + "/";
       data.sections.forEach(function (section) {
-        toDownload.push(baseUrl + section.path);
+        toDownload[bookPath].push(baseUrl + section.path);
       });
+      toDownload[bookPath].push(baseUrl + "cover.jpg");
     })
     .fail(function(){
         alert("Failed to download index for downloading book");
@@ -163,42 +165,57 @@ $(document).ready(function() {
   }
 
   function downloadNextToDownload() {
-    if (toDownload.length == 0) {
-        setTimeout(downloadNextToDownload, 3000);
-        var store = window.localStorage;
-        if (!store) {
-          alert("This browser doesn't support localStorage and won't support offline books. Let the developer know that you would like this resolved.");
+    var url = null;
+    for (var key in toDownload) {
+      if (toDownload.hasOwnProperty(key)) {
+        if (toDownload[key].length < 1) {
+          var store = window.localStorage;
+          if (!store) {
+            return;
+          }
+
+          var downloaded = store.getItem('offlineDownloaded');
+          downloaded = JSON.parse(downloaded);
+          downloaded.push(key);
+          store.setItem('offlineDownloaded', JSON.stringify(downloaded));
+
+          var queued = store.getItem('offlineQueued');
+          queued = JSON.parse(queued);
+          queued = queued.filter(e => e !== key);
+          store.setItem('offlineQueued', JSON.stringify(queued));
+
+          refreshTableRows();
+          delete toDownload[key];
         }
-        var queued = store.getItem('offlineQueued');
-        queued = JSON.parse(queued);
-        var downloaded = store.getItem('offlineDownloaded');
-        downloaded = JSON.parse(downloaded);
-        while (queued.length > 0) {
-          var book = queued.pop();
-          downloaded.push(book);
+        else {
+          url = toDownload[key].pop();
+          break;
         }
-        store.setItem('offlineQueued', JSON.stringify(queued));
-        store.setItem('offlineDownloaded', JSON.stringify(downloaded));
-        $('#books').find('tr').each(function() {
-            t.row(this).invalidate().draw('page');
-        });
+      }
     }
-    else {
-      var url = toDownload.pop();
-      $.get(url).done(function() {
-        downloadNextToDownload();
-      })
-      .fail(function() {
-        toDownload.push(url);
-        setTimeout(downloadNextToDownload, 3000);
-      });
+    if (!url) {
+      setTimeout(downloadNextToDownload, 3000);
+      return
     }
+    $.get(url).done(function() {
+      downloadNextToDownload();
+    })
+    .fail(function() {
+      toDownload.push(url);
+      setTimeout(downloadNextToDownload, 3000);
+    });
+  }
+
+  function refreshTableRows()
+  {
+    $('#books').find('tr').each(function() {
+      t.row(this).invalidate().draw('page');
+    });
   }
 
   function startAllQueuedDownloads() {
     var store = window.localStorage;
     if (!store) {
-      alert("This browser doesn't support localStorage and won't support offline books. Let the developer know that you would like this resolved.");
       return;
     }
     var queued = store.getItem('offlineQueued');
