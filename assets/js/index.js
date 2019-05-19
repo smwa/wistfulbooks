@@ -4,7 +4,10 @@ $(document).ready(function() {
     var playButton = "<button type='button' title='Play' aria-label='Play book' class='play_book btn btn-outline-dark'>&#9654;</button>";
     var endButtonGroup = '</div>';
     var t = $('#books').DataTable({
-        'ajax': 'catalog/catalog.json',
+        'ajax': {
+          'url': 'catalog/catalog.json',
+          'cache': true
+        },
         'deferRender': true,
         'scrollY': 'calc(100vh - 195px)',
         'scroller': true,
@@ -236,5 +239,9 @@ $(document).ready(function() {
 
   startAllQueuedDownloads();
   setTimeout(downloadNextToDownload, 5000);
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./serviceWorker.js');
+  }
 
 } );
