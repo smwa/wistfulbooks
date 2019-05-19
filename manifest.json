@@ -1,5 +1,5 @@
 {
-  "short_name": "librivox_libre",
+  "short_name": "Librivox Libre",
   "name": "Librivox Libre",
   "icons": [
     {
@@ -10,5 +10,6 @@
   ],
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#FFFFFF"
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF"
 }
