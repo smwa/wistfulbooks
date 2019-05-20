@@ -14,6 +14,9 @@ $(document).ready(function() {
         'scrollY': 'calc(100vh - 195px)',
         'scroller': true,
         'responsive': true,
+        'search': {
+          'search': availableOfflineText
+        },
         'columns': [
             {
                 'title': 'Title',
