@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    var availableOfflineText = 'Available Offline';
     var startButtonGroup = "<div class='btn-group' role='group' aria-label='Book actions'>";
     var infoButton = "<button type='button' title='Info' aria-label='Show book information' class='book_info btn btn-outline-dark'>&#8505;</button>";
     var playButton = "<button type='button' title='Play' aria-label='Play book' class='play_book btn btn-outline-dark'>&#9654;</button>";
@@ -45,7 +46,7 @@ $(document).ready(function() {
                 'title': 'Actions',
                 'responsivePriority': 7,
                 'render': function(bookPath) {
-                    return "<input type='hidden' class='book_path' value='" + bookPath + "'>"
+                    return "<span class='book_path d-none'>" + bookPath + "</span>"
                          + startButtonGroup
                          + infoButton
                          + playButton
@@ -62,7 +63,7 @@ $(document).ready(function() {
     $('.book-info-modal-title').text('Loading...');
     $('.book-info-modal-cover-art').css('display', 'none');
     $('.book-info-modal-supporters').html('');
-    var path = $(ev.target).closest('td').find(".book_path").val();
+    var path = $(ev.target).closest('td').find(".book_path").text();
     $.get("./catalog/books/" + path + "/index.json")
     .done(function(data) {
         if (typeof data === 'string') data = JSON.parse(data);
@@ -84,7 +85,7 @@ $(document).ready(function() {
   });
 
   $(document).on('click', '.play_book', function (ev) {
-    var path = $(ev.target).closest('td').find(".book_path").val();
+    var path = $(ev.target).closest('td').find(".book_path").text();
     $.get("./catalog/books/" + path + "/index.json")
     .done(function(data) {
         if (typeof data === 'string') data = JSON.parse(data);
@@ -116,7 +117,7 @@ $(document).ready(function() {
 
   $(document).on('click', '.download_book', function (ev) {
     var store = window.localStorage;
-    var book = $(ev.target).closest('td').find(".book_path").val();
+    var book = $(ev.target).closest('td').find(".book_path").text();
     var queued = store.getItem('offlineQueued');
     queued = JSON.parse(queued);
     queued.push(book);
@@ -126,7 +127,7 @@ $(document).ready(function() {
   });
 
   $(document).on('click', '.share_book', function (ev) {
-    var book = $(ev.target).closest('td').find(".book_path").val();
+    var book = $(ev.target).closest('td').find(".book_path").text();
     var url = window.location.href.split('#')[0]+"#"+book;
     if (navigator.share) {
       var title = t.row(this).data()[0];
@@ -142,7 +143,7 @@ $(document).ready(function() {
       $temp.val(url).select();
       document.execCommand("copy");
       $temp.remove();
-      ev.target.innerHTML = "Link Copied To Clipboard";
+      ev.target.innerHTML = "Link Copied";
     }
   });
 
@@ -210,7 +211,7 @@ $(document).ready(function() {
     var queued = store.getItem('offlineQueued');
     var downloaded = store.getItem('offlineDownloaded');
     if (downloaded.includes(book)) {
-        return "<button type='button' title='Book is available offline' aria-label='Book is available offline' class='downloaded_book btn btn-outline-dark' disabled>Available Offline</button>";
+        return "<button type='button' title='Book is available offline' aria-label='Book is available offline' class='downloaded_book btn btn-outline-dark' disabled>" + availableOfflineText + "</button>";
     }
     if (queued.includes(book)) {
         return "<button type='button' title='Downloading book' aria-label='Downloading book' class='downloading_book btn btn-outline-dark' disabled>Downloading...</button>";
@@ -306,6 +307,24 @@ $(document).ready(function() {
     });
   }
 
+  function setInitialSearchValue() {
+    var hash = window.location.hash.substring(1);
+    if (hash.length > 0 && ['look', 'listen', 'learn'].indexOf(hash) === -1) {
+      t.search(hash).draw();
+      return
+    }
+    var store = window.localStorage;
+    if (store) {
+      var downloaded = store.getItem('offlineDownloaded');
+      if (downloaded && downloaded != '[]') {
+        t.search(availableOfflineText).draw();
+        return;
+      }
+    }
+    t.search('H. G. Wells').draw();
+  }
+
+  setInitialSearchValue();
   startAllQueuedDownloads();
   setTimeout(downloadNextToDownload, 5000);
 
