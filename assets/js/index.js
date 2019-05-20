@@ -156,7 +156,7 @@ $(document).ready(function() {
 
   APlayerObject.on('play', function (e) {
     if ('mediaSession' in navigator) {
-      var audio2 = APlayerObject.list.audios[APlayerObject.list.index];
+      var audio = APlayerObject.list.audios[APlayerObject.list.index];
       navigator.mediaSession.metadata = new MediaMetadata({
         'title': audio.name,
         'artist': audio.artist,
