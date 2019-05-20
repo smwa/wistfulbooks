@@ -94,7 +94,8 @@ $(document).ready(function() {
                 name: section.title,
                 artist: authors,
                 url: baseUrl + section.path,
-                cover: baseUrl + "cover.jpg"
+                cover: baseUrl + "cover.jpg",
+                album: data.title
             });
         });
 
@@ -129,6 +130,47 @@ $(document).ready(function() {
     loop: 'none',
     listMaxHeight: 1500,
     audio: []
+  });
+
+  
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', function() {
+      APlayerObject.play();
+    });
+    navigator.mediaSession.setActionHandler('pause', function() {
+      APlayerObject.pause();
+    });
+    navigator.mediaSession.setActionHandler('seekbackward', function() {
+      APlayerObject.seek(Math.max(0, APlayerObject.audio.currentTime - 15)); // Skip back 15 seconds
+    });
+    navigator.mediaSession.setActionHandler('seekforward', function() {
+      APlayerObject.seek(Math.min(APlayerObject.audio.duration, APlayerObject.audio.currentTime + 15)); // Skip forward 15 seconds  
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', function() {
+      APlayerObject.skipBack();
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', function() {
+      APlayerObject.skipForward();
+    });
+  }
+
+  APlayerObject.on('play', function (e) {
+    if ('mediaSession' in navigator) {
+      var audio2 = APlayerObject.list.audios[APlayerObject.list.index];
+      navigator.mediaSession.metadata = new MediaMetadata({
+        'title': audio.name,
+        'artist': audio.artist,
+        'album': audio.album,
+        artwork: [{src: audio.cover}]
+      });
+      navigator.mediaSession.playbackState = "playing";
+    }
+  });
+
+  APlayerObject.on('pause', function (e) {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = "paused";
+    }
   });
 
   setTimeout(function() { $('div.dataTables_filter input').focus(); }, 0);
