@@ -2,6 +2,7 @@ $(document).ready(function() {
     var startButtonGroup = "<div class='btn-group' role='group' aria-label='Book actions'>";
     var infoButton = "<button type='button' title='Info' aria-label='Show book information' class='book_info btn btn-outline-dark'>&#8505;</button>";
     var playButton = "<button type='button' title='Play' aria-label='Play book' class='play_book btn btn-outline-dark'>&#9654;</button>";
+    var shareButton = "<button type='button' title='Share' aria-label='Share book' class='share_book btn btn-outline-dark'>Share</button>";
     var endButtonGroup = '</div>';
     var t = $('#books').DataTable({
         'ajax': {
@@ -48,6 +49,7 @@ $(document).ready(function() {
                          + startButtonGroup
                          + infoButton
                          + playButton
+                         + shareButton
                          + getButtonForBookOfflineAvailablity(bookPath)
                          + endButtonGroup;
                 }
@@ -100,9 +102,10 @@ $(document).ready(function() {
         });
 
         // Jump to player
-        var url = location.href;
         location.href = "#listen";
-        history.replaceState(null,null,url);
+        setTimeout(function() {
+          location.href = "#" + path;
+	}, 0);
 
         APlayerObject.play();
     });
@@ -117,6 +120,27 @@ $(document).ready(function() {
     store.setItem('offlineQueued', JSON.stringify(queued));
     startDownload(book);
     t.row($(ev.target).closest('tr')).invalidate().draw('page');
+  });
+
+  $(document).on('click', '.share_book', function (ev) {
+    var book = $(ev.target).closest('td').find(".book_path").val();
+    var url = window.location.href.split('#')[0]+"#"+book;
+    if (navigator.share) {
+      var title = t.row(this).data()[0];
+      navigator.share({
+        title: title,
+	url: url
+      });
+    }
+    else {
+      // Copy to clipboard
+      var $temp = $("<input>");
+      $("body").append($temp);
+      $temp.val(url).select();
+      document.execCommand("copy");
+      $temp.remove();
+      ev.target.innerHTML = "Link Copied To Clipboard";
+    }
   });
 
   var APlayerObject = new APlayer({
