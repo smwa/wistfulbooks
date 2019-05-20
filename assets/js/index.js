@@ -77,8 +77,8 @@ $(document).ready(function() {
             $('.book-info-modal-supporters').append(supporterListItem);
         });
     })
-    .fail(function(data) {
-        $('.book-info-modal-description').html('Book information failed to load.');
+    .fail(function(jqxhr, statusText, errorThrown) {
+        $('.book-info-modal-description').html('Book information failed to load. Check your connection, and consider making the book available offline when you are connected.');
     });
     $('#book-info-modal').modal('show');
   });
@@ -108,6 +108,9 @@ $(document).ready(function() {
 	}, 0);
 
         APlayerObject.play();
+    })
+    .fail(function(jqXHR, textStatus, errorThrown){
+        alert("Failed to play book. Check your internet connection, and consider making the book available offline when you are connected.");
     });
   });
 
@@ -228,8 +231,8 @@ $(document).ready(function() {
       });
       toDownload[bookPath].push(baseUrl + "cover.jpg");
     })
-    .fail(function(){
-        alert("Failed to download index for downloading book");
+    .fail(function(jqXHR, textStatus, errorThrown){
+        alert("Failed to download book. Check your internet connection.");
     });
   }
 
