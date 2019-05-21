@@ -5,6 +5,9 @@ $(document).ready(function() {
     var playButton = "<button type='button' title='Play' aria-label='Play book' class='play_book btn btn-outline-dark'>&#9654;</button>";
     var shareButton = "<button type='button' title='Share' aria-label='Share book' class='share_book btn btn-outline-dark'>Share</button>";
     var endButtonGroup = '</div>';
+    var switchChapters = null;
+    var seekTime = null;
+
     var t = $('#books').DataTable({
         'ajax': {
           'url': 'catalog/catalog.json',
@@ -107,11 +110,18 @@ $(document).ready(function() {
 
         // Jump to player
         location.href = "#listen";
-        setTimeout(function() {
-          location.href = "#" + path;
-	}, 0);
 
         APlayerObject.play();
+
+        // For loading the last played part of tracks
+        location.href = "#" + path;
+        var progress = window.localStorage.getItem('progress');
+        if (!progress) progress = '{}';
+        progress = JSON.parse(progress);
+        var audio = APlayerObject.list.audios[APlayerObject.list.index];
+        progress = progress[audio.artist + "|" + audio.album];
+        switchChapters = progress['chapter'];
+        seekTime = progress['seek'];
     })
     .fail(function(jqXHR, textStatus, errorThrown){
         alert("Failed to play book. Check your internet connection, and consider making the book available offline when you are connected.");
@@ -204,7 +214,33 @@ $(document).ready(function() {
     }
   });
 
-  setTimeout(function() { $('div.dataTables_filter input').focus(); }, 0);
+  var timeUpdateCounter = 0;
+
+  APlayerObject.on('timeupdate', function (e, two, three) {
+    if (switchChapters !== null) {
+      APlayerObject.list.switch(switchChapters);
+      switchChapters = null;
+      return;
+    }
+    else if (seekTime !== null) {
+      APlayerObject.seek(seekTime);
+      seekTime = null;
+      return;
+    }
+    timeUpdateCounter += 1;
+    if (!window.localStorage || timeUpdateCounter % 10 !== 0) {
+      return;
+    }
+    var progress = window.localStorage.getItem('progress');
+    if (!progress) progress = '{}';
+    progress = JSON.parse(progress);
+    var audio = APlayerObject.list.audios[APlayerObject.list.index];
+    progress[audio.artist + "|" + audio.album] = {
+      'chapter': APlayerObject.list.index,
+      'seek': APlayerObject.audio.currentTime
+    };
+    window.localStorage.setItem('progress', JSON.stringify(progress));
+  });
 
   function getButtonForBookOfflineAvailablity(book) {
     var store = window.localStorage;
