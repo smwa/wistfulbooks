@@ -223,12 +223,14 @@ $(document).ready(function() {
       return;
     }
     else if (seekTime !== null) {
-      APlayerObject.seek(seekTime);
-      seekTime = null;
+      if (APlayerObject.audio.currentTime >= 0.1) {
+        APlayerObject.seek(seekTime);
+        seekTime = null;
+      }
       return;
     }
     timeUpdateCounter += 1;
-    if (!window.localStorage || timeUpdateCounter % 10 !== 0) {
+    if (!window.localStorage || timeUpdateCounter % 25 !== 0) {
       return;
     }
     var progress = window.localStorage.getItem('progress');
