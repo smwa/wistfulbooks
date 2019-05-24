@@ -17,6 +17,10 @@ $(document).ready(function() {
         'scrollY': 'calc(100vh - 195px)',
         'scroller': true,
         'responsive': true,
+        'processing': true,
+        'oLanguage': {
+          'sProcessing': '<div style="top: 0"><img src="assets/img/loading.svg"></div>',
+        },
         'search': {
           'search': availableOfflineText
         },
