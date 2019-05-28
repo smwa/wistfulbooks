@@ -92,6 +92,7 @@ $(document).ready(function() {
         $('.book-info-modal-description').html('Book information failed to load. Check your connection, and consider making the book available offline when you are connected.');
     });
     $('#book-info-modal').modal('show');
+    window.location.hash = window.location.hash.substring(1) + "/popup";
   });
 
   $(document).on('click', '.play_book', function (ev) {
@@ -163,6 +164,25 @@ $(document).ready(function() {
       ev.target.innerHTML = "Link Copied";
     }
   });
+
+  window.onhashchange = function() {
+    var hash = location.hash.substring(1);
+    var isPopup = ('/popup' === hash.substring(hash.length - 6));
+    if (!isPopup) {
+      $('#book-info-modal').modal('hide');
+    }
+    else {
+      hash = hash.substring(0, hash.length - 6);
+    }
+    if (['look', 'listen', 'learn'].indexOf(hash) === -1) {
+      t.search(hash).draw();
+    }
+  }
+
+  $('#book-info-modal').on('hidden.bs.modal', function (e) {
+    location.hash = location.hash.substring(1).replace(/\/popup/g, "");
+  });
+  
 
   var APlayerObject = new APlayer({
     element: document.getElementById('audioplayer'),
