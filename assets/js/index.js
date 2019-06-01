@@ -92,7 +92,7 @@ $(document).ready(function() {
         $('.book-info-modal-description').html('Book information failed to load. Check your connection, and consider making the book available offline when you are connected.');
     });
     $('#book-info-modal').modal('show');
-    window.location.hash = window.location.hash.substring(1) + "/popup";
+    window.location.hash = "#" + t.search() + "/popup";
   });
 
   $(document).on('click', '.play_book', function (ev) {
@@ -180,7 +180,7 @@ $(document).ready(function() {
   }
 
   $('#book-info-modal').on('hidden.bs.modal', function (e) {
-    location.hash = location.hash.substring(1).replace(/\/popup/g, "");
+    window.location.hash = window.location.hash.substring(1).replace(/\/popup/g, "");
   });
   
 
