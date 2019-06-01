@@ -175,6 +175,7 @@ $(document).ready(function() {
       hash = hash.substring(0, hash.length - 6);
     }
     if (['look', 'listen', 'learn'].indexOf(hash) === -1) {
+      hash = decodeURI(hash);
       t.search(hash).draw();
     }
   }
