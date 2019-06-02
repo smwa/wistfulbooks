@@ -142,8 +142,13 @@ def downloadMp3s(book, soup, fullDirectory):
     it = p.imap_unordered(downloadMp3FromLink, dlTuples, 3)
     try:
         for n in it:
-            count += 1
-            print("Downloaded {:.1f}% of {} .mp3's".format(100*count/total, total))
+            if n:
+                count += 1
+                print("Downloaded {:.1f}% of {} .mp3's".format(100*count/total, total))
+            else:
+                indexJsonPath = os.path.join(fullDirectory, 'index.json')
+                if os.path.exists(indexJsonPath):
+                    os.remove(indexJsonPath)
     except KeyboardInterrupt as e:
         print("KeyboardInterrupt while getting book {}({})".format(book['title'], book['id']))
         p.terminate()
@@ -162,7 +167,7 @@ def downloadMp3FromLink(bookAndHrefAndNewPath):
             r.raise_for_status()
         except Exception as e:
             print("Failed to get {} in book {} for id {} due to status code".format(href, newFullPath, book['id']), e)
-            return
+            raise e
         with open(newFullPath, 'wb') as f:
             for chunk in r:
                 f.write(chunk)
@@ -172,6 +177,8 @@ def downloadMp3FromLink(bookAndHrefAndNewPath):
         print("Failed to get {} in book {} for id {}".format(href, newFullPath, book['id']), e)
         if os.path.exists(newFullPath):
             os.remove(newFullPath)
+        return False
+    return True
 
 def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):    
     if not getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
@@ -189,10 +196,15 @@ def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):
         os.mkdir(fullDirectory)
 
     downloadOrSkipCoverArt(soup, fullDirectory)
-    downloadMp3s(book, soup, fullDirectory)
     buildIndex(book, soup, fullDirectory)
+    downloadMp3s(book, soup, fullDirectory)
 
 def buildIndex(book, soup, fullDirectory):
+    jsonPath = os.path.join(fullDirectory, 'index.json')
+    
+    if os.path.exists(jsonPath):
+        return
+
     data = {
         'title': book['title'],
         'description': book['description'],
@@ -207,11 +219,6 @@ def buildIndex(book, soup, fullDirectory):
             'id': author['id'],
             'name': "{} {}".format(author['first_name'], author['last_name']),
         })
-
-    jsonPath = os.path.join(fullDirectory, 'index.json')
-    
-    if os.path.exists(jsonPath):
-        return
 
     if not soup.find('table', 'chapter-download'):
         print("Project is invalid {}".format(book['url_librivox']))
