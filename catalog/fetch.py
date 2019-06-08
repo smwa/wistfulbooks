@@ -13,7 +13,7 @@ def main():
     OUTPUT_DIR = 'books'
     os.makedirs(OUTPUT_DIR, mode=0o777, exist_ok=True)
     
-    CHUNK_SIZE = 10
+    CHUNK_SIZE = 20000
     CHUNK_NUM = 0
 
     catalog = getOrLoadCatalog()
@@ -31,7 +31,7 @@ def main():
     print("Done")
 
 def getOrLoadCatalog():
-    API_LIST_FILENAME = "1.getListsFromApi.json"
+    API_LIST_FILENAME = "catalogFromLibrivox.json"
 
     if os.path.exists(API_LIST_FILENAME):
         with open(API_LIST_FILENAME) as f:
