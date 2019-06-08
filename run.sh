@@ -1,5 +1,5 @@
 #!/bin/bash
-CONTAINER_NAME=librivoxlibri
+CONTAINER_NAME=wistfulbooks
 docker pull nginx:stable-alpine
 docker stop $CONTAINER_NAME
 docker rm $CONTAINER_NAME

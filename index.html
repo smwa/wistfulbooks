@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Librivox Libre</title>
+    <title>Wistful Books</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,7 +27,7 @@
     <nav class="navbar sticky-top navbar-expand navbar-light bg-light">
       <a class="navbar-brand" href="#">
         <img src="favicon.png" width="30" height="30" class="d-inline-block align-top" alt="">
-        Librivox Libre
+        Wistful Books
       </a>
       <div class="collapse navbar-collapse" id="navbarNav">
         <div class="navbar-nav">
@@ -55,36 +55,37 @@
             <div id="audioplayer"></div>
         </div>
 
-        <!-- About Librivox Libri -->
+        <!-- About Wistful Books -->
         <div class="col-lg-4 collapse show" id="about">
           <div class="card bg-light mb-3">
             <a name="learn" id="learn" style='position: relative; top: -58px'></a>
             <div class="card-header">
-              About Librivox Libre
+              About Wistful Books
               <button type="button" class="close" data-toggle="collapse" data-target="#about" aria-expanded="true">
                 <span aria-hidden="true">×</span>
               </button>
             </div>
             <div class="card-body">
               <p class="card-text">
-                Welcome to Librivox Libri! This site takes the great work that <a href='https://librivox.org/'>Librivox.org</a>
+                Welcome to Wistful Books! This site takes the great work that <a target='_blank' href='https://librivox.org/'>Librivox.org</a>
                   has done and packages it into a single page that lets you listen to audiobooks in your browser.
                 You can download books so that you can come back here without internet,
                   no matter where you are and whether you are on your phone, tablet, or computer.
               </p>
               <p class="card-text">
-                This site is provided for free, and the source code can be found at <a href="https://github.com/smwa/librivoxlibri">https://github.com/smwa/librivoxlibri</a>.
+                This site is provided for free, and the source code can be found at <a target='_blank' href="https://github.com/smwa/wistfulbooks">https://github.com/smwa/wistfulbooks</a>.
                 Feel free to create an issue or pull request there if you have anything you would like to change.
               </p>
               <p class="card-text">
-                <b>The following paragraph is not currently accurate. </b>Librivox Libri uses <a href='https://ipfs.io/'>ipfs.io</a> to distribute the audiobooks without being dependent on the original website being up.
-                By using this site, you agree to help the greater community by contributing your resources, such as your bandwidth and storage, to send
-                any audiobooks and content needed for Librivox Libri that you have downloaded to others that are interested in using the site.
+                Wistful Books is hosted on <a target='_blank' href='https://ipfs.io/'>ipfs.io</a> to distribute the audiobooks without being dependent on the original website.
+                If you would like to help make books available, you should consider running your own instance of IPFS, and loading this website from your own instance.
+                <a target='_blank' href='https://docs.ipfs.io/guides/guides/install/'>docs.ipfs.io</a> will tell you how to do this.
               </p>
-              <p class="card-text">
-                If you enjoy the service and would like to help make more books available to everyone, you can click
-                "Make Available Offline" for books above that interest you.
-                They will be downloaded and then shared with the next person that is interested in it.
+              <p>
+                Once you have IPFS installed, you should be able to go to <a href='http://localhost:8080/ipns/wistfulbooks.com/'>http://localhost:8080/ipns/wistfulbooks.com/</a>
+                  to open this site again.
+                After this, any books you listen to or make available offline will be distributed to others that want to listen.
+                Then you can help us by making all books that you are interested in available offline.
               </p>
             </div>
           </div>
