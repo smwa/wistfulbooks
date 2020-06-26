@@ -58,6 +58,7 @@ def getListOfBooksFromApi():
         records = r.json()['books']
         for row in records:
             results.append(row)
+        r.close()
     return results
 
 def getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
@@ -76,6 +77,7 @@ def getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
         r.raise_for_status()
         with open(filename, 'w') as f:
             f.write(r.text)
+        r.close()
         return True
     except Exception as e:
         print("Failed to fetch id {} with url {}: e".format(id, url, e))
@@ -98,12 +100,14 @@ def downloadOrSkipCoverArt(soup, fullDirectory):
     r = requests.get(coverLink, stream=True)
     if r.status_code != 200:
         print("Non Okay status {} for {}".format(r.status_code, coverArtFilename))
+        r.close()
         return
     
     try:
         with open(coverArtFilename, 'wb') as f:
             for chunk in r:
                 f.write(chunk)
+        r.close()
     except KeyboardInterrupt as e:
         print("Keyboard interrupt during cover art download")
         if os.path.exists(coverArtFilename):
@@ -149,6 +153,7 @@ def downloadMp3s(book, soup, fullDirectory):
                 indexJsonPath = os.path.join(fullDirectory, 'index.json')
                 if os.path.exists(indexJsonPath):
                     os.remove(indexJsonPath)
+        p.close()
     except KeyboardInterrupt as e:
         print("KeyboardInterrupt while getting book {}({})".format(book['title'], book['id']))
         p.terminate()
@@ -171,6 +176,7 @@ def downloadMp3FromLink(bookAndHrefAndNewPath):
         with open(newFullPath, 'wb') as f:
             for chunk in r:
                 f.write(chunk)
+        r.close()
     except KeyboardInterrupt as e:
         raise e
     except Exception as e:
