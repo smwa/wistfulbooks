@@ -13,7 +13,7 @@ def main():
 
     OUTPUT_DIR = 'books'
     os.makedirs(OUTPUT_DIR, mode=0o777, exist_ok=True)
-    
+
     CHUNK_SIZE = 20000
     CHUNK_NUM = 0
 
@@ -53,13 +53,13 @@ def getListOfBooksFromApi():
     while True:
         print("getting {} - {}".format(offset, offset+LIMIT))
         with requests.get(URL.format(offset, LIMIT)) as r:
-	        offset += LIMIT
-	        if r.status_code > 299:
-	            break
-	        records = r.json()['books']
-	        for row in records:
-	            results.append(row)
-	        r.close()
+            offset += LIMIT
+            if r.status_code > 299:
+                break
+            records = r.json()['books']
+            for row in records:
+                results.append(row)
+            r.close()
     return results
 
 def getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
@@ -76,10 +76,10 @@ def getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
 
     try:
         with requests.get(url, allow_redirects=False) as r:
-	        r.raise_for_status()
-	        with open(filename, 'w') as f:
+            r.raise_for_status()
+            with open(filename, 'w') as f:
                 html = r.text
-	            f.write(html)
+                f.write(html)
                 r.close()
                 return html
     except Exception as e:
@@ -95,27 +95,27 @@ def downloadOrSkipCoverArt(soup, fullDirectory):
     coverArtFilename = os.path.join(fullDirectory, 'cover.jpg')
     if os.path.exists(coverArtFilename):
         return
-    
+
     coverLink = findCoverArtLink(soup)
     if not coverLink or (coverLink[-4:].lower() != '.jpg' and coverLink[-4:].lower() != '.jpeg'):
         print("No cover link found for {}".format(coverArtFilename))
         return
     with requests.get(coverLink, stream=True) as r:
-	    if r.status_code != 200:
-	        print("Non Okay status {} for {}".format(r.status_code, coverArtFilename))
-	        r.close()
-	        return
-    
-	    try:
-	        with open(coverArtFilename, 'wb') as f:
-	            for chunk in r:
-	                f.write(chunk)
-	        r.close()
-	    except KeyboardInterrupt as e:
-	        print("Keyboard interrupt during cover art download")
-	        if os.path.exists(coverArtFilename):
-	            os.remove(coverArtFilename)
-	        raise e
+        if r.status_code != 200:
+            print("Non Okay status {} for {}".format(r.status_code, coverArtFilename))
+            r.close()
+            return
+
+        try:
+            with open(coverArtFilename, 'wb') as f:
+                for chunk in r:
+                    f.write(chunk)
+            r.close()
+        except KeyboardInterrupt as e:
+            print("Keyboard interrupt during cover art download")
+            if os.path.exists(coverArtFilename):
+                os.remove(coverArtFilename)
+            raise e
 
 def findCoverArtLink(soup):
     links = soup.find_all(class_="download-cover")
@@ -144,26 +144,26 @@ def downloadMp3s(book, soup, fullDirectory):
         else:
             print("Cant Find chapterNumber for {}".format(href))
     with Pool(16) as p:
-	    count = 0
-	    total = len(dlTuples)
-	    it = p.imap_unordered(downloadMp3FromLink, dlTuples, 1)
-	    try:
-	        for n in it:
-	            if n:
-	                count += 1
-	                print("Downloaded {:.1f}% of {} .mp3's".format(100*count/total, total))
-	            else:
-	                indexJsonPath = os.path.join(fullDirectory, 'index.json')
-	                if os.path.exists(indexJsonPath):
-	                    os.remove(indexJsonPath)
-	        p.close()
-	    except KeyboardInterrupt as e:
-	        print("KeyboardInterrupt while getting book {}({})".format(book['title'], book['id']))
-	        p.terminate()
-	        for file in os.listdir(fullDirectory):
-	            if file.endswith(".mp3"):
-	                os.remove(os.path.join(fullDirectory, file))
-	        raise e 
+        count = 0
+        total = len(dlTuples)
+        it = p.imap_unordered(downloadMp3FromLink, dlTuples, 1)
+        try:
+            for n in it:
+                if n:
+                    count += 1
+                    print("Downloaded {:.1f}% of {} .mp3's".format(100*count/total, total))
+                else:
+                    indexJsonPath = os.path.join(fullDirectory, 'index.json')
+                    if os.path.exists(indexJsonPath):
+                        os.remove(indexJsonPath)
+            p.close()
+        except KeyboardInterrupt as e:
+            print("KeyboardInterrupt while getting book {}({})".format(book['title'], book['id']))
+            p.terminate()
+            for file in os.listdir(fullDirectory):
+                if file.endswith(".mp3"):
+                    os.remove(os.path.join(fullDirectory, file))
+            raise e
 
 def downloadMp3FromLink(bookAndHrefAndNewPath):
     book = bookAndHrefAndNewPath[0]
@@ -171,15 +171,15 @@ def downloadMp3FromLink(bookAndHrefAndNewPath):
     newFullPath = bookAndHrefAndNewPath[2]
     try:
         with  requests.get(href, stream=True) as r:
-	        try:
-	            r.raise_for_status()
-	        except Exception as e:
-	            print("Failed to get {} in book {} for id {} due to status code".format(href, newFullPath, book['id']), e)
-	            raise e
-	        with open(newFullPath, 'wb') as f:
-	            for chunk in r:
-	                f.write(chunk)
-	        r.close()
+            try:
+                r.raise_for_status()
+            except Exception as e:
+                print("Failed to get {} in book {} for id {} due to status code".format(href, newFullPath, book['id']), e)
+                raise e
+            with open(newFullPath, 'wb') as f:
+                for chunk in r:
+                    f.write(chunk)
+            r.close()
     except KeyboardInterrupt as e:
         raise e
     except Exception as e:
@@ -189,13 +189,13 @@ def downloadMp3FromLink(bookAndHrefAndNewPath):
         return False
     return True
 
-def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):    
+def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):
     html = getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR)
     if html is None:
         return
 
     soup = BeautifulSoup(html, 'html.parser')
-    
+
     directory = book['url_librivox'].replace("https://librivox.org/", "").replace("http://librivox.org/", "").replace("/", "")
     fullDirectory = os.path.join(OUTPUT_DIR, directory)
     if not os.path.isdir(fullDirectory):
@@ -209,7 +209,7 @@ def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):
 
 def buildIndex(book, soup, fullDirectory):
     jsonPath = os.path.join(fullDirectory, 'index.json')
-    
+
     if os.path.exists(jsonPath):
         return
 
@@ -231,7 +231,7 @@ def buildIndex(book, soup, fullDirectory):
     if not soup.find('table', 'chapter-download'):
         print("Project is invalid {}".format(book['url_librivox']))
         return
-    
+
     # Genres
     genreTag = soup.find('p', class_="book-page-genre")
     if genreTag:
@@ -240,7 +240,7 @@ def buildIndex(book, soup, fullDirectory):
         data['genres'] = genres
     else:
         print("No genres for {}, {}".format(directory, book['url_librivox']))
-    
+
     #Product Details
     detailsTag = soup.find('dl', class_='product-details')
     details = []
@@ -257,9 +257,9 @@ def buildIndex(book, soup, fullDirectory):
                     details.append({'role': key, 'name': value})
     if len(details) > 0:
         data['supporters'] = details
-    
+
     links = soup.find_all("a", class_="play-btn")
-    
+
     headerTags = soup.find("table", class_="chapter-download").find_all('th')
     headerToIndex = {}
     i = 0
@@ -267,7 +267,7 @@ def buildIndex(book, soup, fullDirectory):
         headerToIndex[t.string] = i
         i += 1
     sections = []
-    
+
     for link in links:
         text = None
         href = link.get('href')
@@ -314,7 +314,7 @@ def buildIndex(book, soup, fullDirectory):
                 'path': sectionFilename,
                 'duration': duration
             })
-            
+
     data['sections'] = sections
     try:
         with open(jsonPath, 'w') as f:
