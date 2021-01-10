@@ -5,6 +5,7 @@ from glob import glob
 from multiprocessing import Pool
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
+from multiprocessing_tools import map as multithreadedMap
 
 def main():
     SCRAPED_PAGES_DIR = 'scrapedPages'
@@ -66,20 +67,21 @@ def getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
     filename = os.path.join(SCRAPED_PAGES_DIR, "{}.html".format(id))
 
     if os.path.exists(filename):
-        return True
+        with open(filename, 'r') as f:
+            return f.read()
 
     if not url or url[0:26] == 'https://forum.librivox.org' or url == '' or 'project-not-available' in book['url_librivox']:
-        return False
+        return None
 
     try:
         r = requests.get(url, allow_redirects=False)
         r.raise_for_status()
         with open(filename, 'w') as f:
             f.write(r.text)
-        return True
+            return r.text
     except Exception as e:
         print("Failed to fetch id {} with url {}: e".format(id, url, e))
-        return False
+        return None
     except KeyboardInterrupt as e:
         print("Keyboard interrupt during scrape page writing")
         if os.path.exists(filename):
@@ -136,10 +138,10 @@ def downloadMp3s(book, soup, fullDirectory):
                 dlTuples.append((book, href, newFullPath))
         else:
             print("Cant Find chapterNumber for {}".format(href))
-    p = Pool(4)
+    p = Pool(16)
     count = 0
     total = len(dlTuples)
-    it = p.imap_unordered(downloadMp3FromLink, dlTuples, 3)
+    it = p.imap_unordered(downloadMp3FromLink, dlTuples, 1)
     try:
         for n in it:
             if n:
@@ -181,13 +183,10 @@ def downloadMp3FromLink(bookAndHrefAndNewPath):
     return True
 
 def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):    
-    if not getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
+    html = getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR)
+    if html is None:
         return
 
-    html = None
-    file = os.path.join(SCRAPED_PAGES_DIR, book['id'] + ".html")
-    with open(file, 'r') as f:
-        html = f.read()
     soup = BeautifulSoup(html, 'html.parser')
     
     directory = book['url_librivox'].replace("https://librivox.org/", "").replace("http://librivox.org/", "").replace("/", "")
@@ -320,8 +319,7 @@ def buildIndex(book, soup, fullDirectory):
 def buildTotalIndex(bookDir):
     catalog = {'data': []}
     files = glob(os.path.join(bookDir, '*/index.json'))
-    p = Pool(4)
-    for book in p.imap(filenameToBook, files, 500):
+    for book in multithreadedMap(filenameToBook, files):
         catalog['data'].append(book)
     with open("catalog.json", 'w') as f:
         json.dump(catalog, f)

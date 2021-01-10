@@ -1,5 +1,7 @@
 $(document).ready(function() {
     var availableOfflineText = 'Available Offline';
+    var defaultSearchValue = 'H. G. Wells';
+
     var startButtonGroup = "<div class='btn-group' role='group' aria-label='Book actions'>";
     var infoButton = "<button type='button' title='Info' aria-label='Show book information' class='book_info btn btn-outline-dark'>&#8505;</button>";
     var playButton = "<button type='button' title='Play' aria-label='Play book' class='play_book btn btn-outline-dark'>&#9654;</button>";
@@ -387,7 +389,7 @@ $(document).ready(function() {
         return;
       }
     }
-    t.search('H. G. Wells').draw();
+    t.search(defaultSearchValue).draw();
   }
 
   setInitialSearchValue();
