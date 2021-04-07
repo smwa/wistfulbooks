@@ -320,13 +320,36 @@ $(document).ready(function() {
       setTimeout(downloadNextToDownload, 3000);
       return
     }
-    $.get(url).done(function() {
-      downloadNextToDownload();
-    })
-    .fail(function() {
-      toDownload[key].push(url);
-      setTimeout(downloadNextToDownload, 3000);
-    });
+    if (url.search(".mp3") < 0) {
+      var preloader = new Image();
+      preloader.onload = function () {
+        preloader.parentNode.removeChild(preloader);
+        downloadNextToDownload();
+      };
+      preloader.onerror = function (ev) {
+        preloader.parentNode.removeChild(preloader);
+        console.log("failed", url, ev);
+        toDownload[key].push(url);
+        setTimeout(downloadNextToDownload, 3000);
+      };
+    }
+    else {
+      var preloader = new Audio();
+      preloader.preload = "auto";
+      preloader.addEventListener('canplaythrough', function() { 
+        preloader.parentNode.removeChild(preloader);
+        downloadNextToDownload();
+      }, false);
+      preloader.addEventListener('error', function() { 
+        preloader.parentNode.removeChild(preloader);
+        console.log("failed", url, ev);
+        toDownload[key].push(url);
+        setTimeout(downloadNextToDownload, 3000);
+      }, false);
+    }
+    preloader.src = url;
+    preloader.style.display = "none";
+    document.body.appendChild(preloader);
   }
 
   function refreshTableRows()
