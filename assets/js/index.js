@@ -1,6 +1,5 @@
 $(document).ready(function() {
     var availableOfflineText = 'Available Offline';
-    var defaultSearchValue = 'H. G. Wells';
 
     var startButtonGroup = "<div class='btn-group' role='group' aria-label='Book actions'>";
     var infoButton = "<button type='button' title='Info' aria-label='Show book information' class='book_info btn btn-outline-dark'>&#8505;</button>";
@@ -24,7 +23,7 @@ $(document).ready(function() {
           'sProcessing': '<div style="top: 0"><img src="assets/img/loading.svg"></div>',
         },
         'search': {
-          'search': availableOfflineText
+          'search': ""
         },
         'columns': [
             {
@@ -81,13 +80,12 @@ $(document).ready(function() {
     $('.book-info-modal-cover-art').css('display', 'none');
     $('.book-info-modal-supporters').html('');
     var path = $(ev.target).closest('td').find(".book_path").text();
-    $.get("./catalog/books/" + path + "/index.json")
+    $.get("./catalog/books/" + path + ".json")
     .done(function(data) {
         if (typeof data === 'string') data = JSON.parse(data);
         $('.book-info-modal-title').text(data.title);
         $('.book-info-modal-description').html(data.description);
-        var coverArtPath = './catalog/books/' + path + '/cover.jpg';
-        $('.book-info-modal-cover-art').attr('src', coverArtPath).css('display', '');
+        $('.book-info-modal-cover-art').attr('src', data.coverArt);
         data.supporters.forEach(function (supporter) {
             var supporterListItem = $('<li>')
                 .append($('<span>').text(supporter.role + " "))
@@ -103,18 +101,17 @@ $(document).ready(function() {
 
   $(document).on('click', '.play_book', function (ev) {
     var path = $(ev.target).closest('td').find(".book_path").text();
-    $.get("./catalog/books/" + path + "/index.json")
+    $.get("./catalog/books/" + path + ".json")
     .done(function(data) {
         if (typeof data === 'string') data = JSON.parse(data);
         APlayerObject.list.clear();
         var authors = data.authors.map(function (author) { return author.name; }).join(', ');
-        var baseUrl = "./catalog/books/" + path + "/";
         data.sections.forEach(function (section) {
             APlayerObject.list.add({
                 name: section.title,
                 artist: authors,
                 url: section.path,
-                cover: baseUrl + "cover.jpg",
+                cover: data.coverArt,
                 album: data.title
             });
         });
@@ -276,15 +273,14 @@ $(document).ready(function() {
   var toDownload = {};
 
   function startDownload(bookPath) {
-    $.get("./catalog/books/" + bookPath + "/index.json")
+    $.get("./catalog/books/" + bookPath + ".json")
     .done(function(data) {
       if (typeof data === 'string') data = JSON.parse(data);
       toDownload[bookPath] = [];
-      var baseUrl = "./catalog/books/" + bookPath + "/";
       data.sections.forEach(function (section) {
         toDownload[bookPath].push(section.path);
       });
-      toDownload[bookPath].push(baseUrl + "cover.jpg");
+      toDownload[bookPath].push(data.coverArt);
     })
     .fail(function(jqXHR, textStatus, errorThrown){
         alert("Failed to download book. Check your internet connection.");
@@ -376,7 +372,6 @@ $(document).ready(function() {
         return;
       }
     }
-    t.search(defaultSearchValue).draw();
   }
 
   setInitialSearchValue();

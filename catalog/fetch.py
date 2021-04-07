@@ -13,7 +13,7 @@ def main():
     OUTPUT_DIR = 'books'
     os.makedirs(OUTPUT_DIR, mode=0o777, exist_ok=True)
 
-    CHUNK_SIZE = 500
+    CHUNK_SIZE = 50
     CHUNK_NUM = 0
 
     catalog = getOrLoadCatalog()
@@ -90,32 +90,6 @@ def getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR):
             os.remove(filename)
         raise e
 
-def downloadOrSkipCoverArt(soup, fullDirectory):
-    coverArtFilename = os.path.join(fullDirectory, 'cover.jpg')
-    if os.path.exists(coverArtFilename):
-        return
-
-    coverLink = findCoverArtLink(soup)
-    if not coverLink or (coverLink[-4:].lower() != '.jpg' and coverLink[-4:].lower() != '.jpeg'):
-        print("No cover link found for {}".format(coverArtFilename))
-        return
-    with requests.get(coverLink, stream=True) as r:
-        if r.status_code != 200:
-            print("Non Okay status {} for {}".format(r.status_code, coverArtFilename))
-            r.close()
-            return
-
-        try:
-            with open(coverArtFilename, 'wb') as f:
-                for chunk in r:
-                    f.write(chunk)
-            r.close()
-        except KeyboardInterrupt as e:
-            print("Keyboard interrupt during cover art download")
-            if os.path.exists(coverArtFilename):
-                os.remove(coverArtFilename)
-            raise e
-
 def findCoverArtLink(soup):
     links = soup.find_all(class_="download-cover")
     coverLink = None
@@ -134,28 +108,19 @@ def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):
     soup = BeautifulSoup(html, 'html.parser')
 
     directory = book['url_librivox'].replace("https://librivox.org/", "").replace("http://librivox.org/", "").replace("/", "")
-    fullDirectory = os.path.join(OUTPUT_DIR, directory)
-    if not os.path.isdir(fullDirectory):
-        os.mkdir(fullDirectory)
-
-    downloadOrSkipCoverArt(soup, fullDirectory)
-    
-    buildIndex(book, soup, fullDirectory)
-
+    jsonPath = os.path.join(OUTPUT_DIR, "{}.json".format(directory))
+    if not os.path.exists(jsonPath):
+        buildIndex(book, soup, jsonPath)
     soup.decompose()
 
-def buildIndex(book, soup, fullDirectory):
-    jsonPath = os.path.join(fullDirectory, 'index.json')
-
-    if os.path.exists(jsonPath):
-        return
-
+def buildIndex(book, soup, jsonPath):
     data = {
         'title': book['title'],
         'description': book['description'],
         'duration': book['totaltimesecs'],
         'language': book['language'],
-        'authors': []
+        'authors': [],
+        'coverArt': findCoverArtLink(soup),
     }
     if book['copyright_year']:
         data['copyright_year'] = book['copyright_year']
@@ -263,7 +228,7 @@ def buildIndex(book, soup, fullDirectory):
 
 def buildTotalIndex(bookDir):
     catalog = {'data': []}
-    files = glob(os.path.join(bookDir, '*/index.json'))
+    files = glob(os.path.join(bookDir, '*.json'))
     for book in multithreadedMap(filenameToBook, files):
         catalog['data'].append(book)
     with open("catalog.json", 'w') as f:
@@ -273,6 +238,7 @@ def buildTotalIndex(bookDir):
 def filenameToBook(filename):
     with open(filename, 'r') as handle:
         book = json.load(handle)
+        bookPath = os.path.splitext(os.path.basename(filename))[0]
         return [
             book['title'],
             ", ".join(map(lambda author : author['name'].strip(), book['authors'])),
@@ -280,7 +246,7 @@ def filenameToBook(filename):
             ", ".join(book['genres']),
             book['language'],
             book['copyright_year'],
-            os.path.basename(os.path.dirname(filename))
+            bookPath
         ]
 
 if __name__ == '__main__':
