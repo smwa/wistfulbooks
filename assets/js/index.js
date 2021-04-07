@@ -109,7 +109,7 @@ $(document).ready(function() {
             APlayerObject.list.add({
                 name: section.title,
                 artist: authors,
-                url: baseUrl + section.path,
+                url: section.path,
                 cover: baseUrl + "cover.jpg",
                 album: data.title
             });
@@ -296,7 +296,7 @@ $(document).ready(function() {
       toDownload[bookPath] = [];
       var baseUrl = "./catalog/books/" + bookPath + "/";
       data.sections.forEach(function (section) {
-        toDownload[bookPath].push(baseUrl + section.path);
+        toDownload[bookPath].push(section.path);
       });
       toDownload[bookPath].push(baseUrl + "cover.jpg");
     })

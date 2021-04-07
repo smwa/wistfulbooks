@@ -2,7 +2,6 @@ import requests
 import json
 import os
 from glob import glob
-from multiprocessing import Pool
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 from multiprocessing_tools import map as multithreadedMap
@@ -14,7 +13,7 @@ def main():
     OUTPUT_DIR = 'books'
     os.makedirs(OUTPUT_DIR, mode=0o777, exist_ok=True)
 
-    CHUNK_SIZE = 20000
+    CHUNK_SIZE = 500
     CHUNK_NUM = 0
 
     catalog = getOrLoadCatalog()
@@ -127,68 +126,6 @@ def findCoverArtLink(soup):
             coverLink = link.get('href')
     return coverLink
 
-def downloadMp3s(book, soup, fullDirectory):
-    links = soup.find_all("a", class_="play-btn")
-    dlTuples = []
-    for link in links:
-        chapterNumber = None
-        href = link.get('href')
-        for child in link.parent.children:
-            if isinstance(child, NavigableString):
-                chapterNumber = child.string
-        if chapterNumber:
-            newFilename = str(int(chapterNumber))+".mp3"
-            newFullPath = os.path.join(fullDirectory, newFilename)
-            if not os.path.exists(newFullPath):
-                dlTuples.append((book, href, newFullPath))
-        else:
-            print("Cant Find chapterNumber for {}".format(href))
-    with Pool(16) as p:
-        count = 0
-        total = len(dlTuples)
-        it = p.imap_unordered(downloadMp3FromLink, dlTuples, 1)
-        try:
-            for n in it:
-                if n:
-                    count += 1
-                    print("Downloaded {:.1f}% of {} .mp3's".format(100*count/total, total))
-                else:
-                    indexJsonPath = os.path.join(fullDirectory, 'index.json')
-                    if os.path.exists(indexJsonPath):
-                        os.remove(indexJsonPath)
-            p.close()
-        except KeyboardInterrupt as e:
-            print("KeyboardInterrupt while getting book {}({})".format(book['title'], book['id']))
-            p.terminate()
-            for file in os.listdir(fullDirectory):
-                if file.endswith(".mp3"):
-                    os.remove(os.path.join(fullDirectory, file))
-            raise e
-
-def downloadMp3FromLink(bookAndHrefAndNewPath):
-    book = bookAndHrefAndNewPath[0]
-    href = bookAndHrefAndNewPath[1]
-    newFullPath = bookAndHrefAndNewPath[2]
-    try:
-        with  requests.get(href, stream=True) as r:
-            try:
-                r.raise_for_status()
-            except Exception as e:
-                print("Failed to get {} in book {} for id {} due to status code".format(href, newFullPath, book['id']), e)
-                raise e
-            with open(newFullPath, 'wb') as f:
-                for chunk in r:
-                    f.write(chunk)
-            r.close()
-    except KeyboardInterrupt as e:
-        raise e
-    except Exception as e:
-        print("Failed to get {} in book {} for id {}".format(href, newFullPath, book['id']), e)
-        if os.path.exists(newFullPath):
-            os.remove(newFullPath)
-        return False
-    return True
-
 def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):
     html = getOrSkipScrapedPage(book, SCRAPED_PAGES_DIR)
     if html is None:
@@ -202,8 +139,8 @@ def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):
         os.mkdir(fullDirectory)
 
     downloadOrSkipCoverArt(soup, fullDirectory)
+    
     buildIndex(book, soup, fullDirectory)
-    downloadMp3s(book, soup, fullDirectory)
 
     soup.decompose()
 
@@ -275,7 +212,6 @@ def buildIndex(book, soup, fullDirectory):
             if isinstance(child, NavigableString):
                 text = child.string
         if text:
-            sectionFilename = str(int(text))+".mp3"
             sectionId = int(text)
             labelRef = link.parent
             for i in range(headerToIndex['Chapter']):
@@ -311,7 +247,7 @@ def buildIndex(book, soup, fullDirectory):
                 'section': sectionId,
                 'title': label.strip(),
                 'readers': readerIds,
-                'path': sectionFilename,
+                'path': href,
                 'duration': duration
             })
 
