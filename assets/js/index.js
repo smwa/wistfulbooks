@@ -324,7 +324,7 @@ $(document).ready(function() {
       downloadNextToDownload();
     })
     .fail(function() {
-      toDownload.push(url);
+      toDownload[key].push(url);
       setTimeout(downloadNextToDownload, 3000);
     });
   }

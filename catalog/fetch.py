@@ -204,6 +204,8 @@ def buildIndex(book, soup, jsonPath):
             except Exception as e:
                 print("Failed to parse duration {} from {}, {}".format(durationString, directory, book['id']))
                 return
+            if href[0:7] == "http://":
+                href = "https://{}".format(href[7:])
             sections.append({
                 'section': sectionId,
                 'title': label.strip(),
