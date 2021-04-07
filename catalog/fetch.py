@@ -94,6 +94,8 @@ def findCoverArtLink(soup):
             if coverLink:
                 raise Exception("Multiple cover links found")
             coverLink = link.get('href')
+    if coverLink and coverLink[0:7] == "http://":
+        coverLink = "https://{}".format(coverLink[7:])
     return coverLink
 
 def handleBook(book, SCRAPED_PAGES_DIR, OUTPUT_DIR):
