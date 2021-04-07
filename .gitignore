@@ -1,4 +1,3 @@
-catalog/books/
 catalog/scrapedPages/
-catalog/catalog.json
 catalog/catalogFromLibrivox.json
+.vscode/

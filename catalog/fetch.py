@@ -13,11 +13,7 @@ def main():
     OUTPUT_DIR = 'books'
     os.makedirs(OUTPUT_DIR, mode=0o777, exist_ok=True)
 
-    CHUNK_SIZE = 50
-    CHUNK_NUM = 0
-
     catalog = getOrLoadCatalog()
-    catalog = catalog[CHUNK_SIZE*CHUNK_NUM:CHUNK_SIZE*(CHUNK_NUM+1)]
 
     count = 0
     total = len(catalog)
