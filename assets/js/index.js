@@ -69,6 +69,11 @@ $(document).ready(function() {
             }
         ]
     });
+  t.on('search.dt', function (ev) {
+    if (window.location.hash.length > 1) {
+      window.location.hash = "";
+    }
+  });
 
   $(document).on('click', ".book_info", function (ev) {
     $('.book-info-modal-description').html('<img src="assets/img/loading.svg">');
@@ -94,7 +99,6 @@ $(document).ready(function() {
         $('.book-info-modal-description').html('Book information failed to load. Check your connection, and consider making the book available offline when you are connected.');
     });
     $('#book-info-modal').modal('show');
-    window.location.hash = "#" + t.search() + "/popup";
   });
 
   $(document).on('click', '.play_book', function (ev) {
@@ -121,7 +125,6 @@ $(document).ready(function() {
         APlayerObject.play();
 
         // For loading the last played part of tracks
-        location.href = "#" + path;
         var progress = window.localStorage.getItem('progress');
         if (!progress) progress = '{}';
         progress = JSON.parse(progress);
@@ -153,7 +156,7 @@ $(document).ready(function() {
       var title = t.row(this).data()[0];
       navigator.share({
         title: title,
-	url: url
+	      url: url
       });
     }
     else {
@@ -164,28 +167,11 @@ $(document).ready(function() {
       document.execCommand("copy");
       $temp.remove();
       ev.target.innerHTML = "Link Copied";
+      setTimeout(function () {
+        ev.target.innerHTML = "Share";
+      }, 5000);
     }
   });
-
-  window.onhashchange = function() {
-    var hash = location.hash.substring(1);
-    var isPopup = ('/popup' === hash.substring(hash.length - 6));
-    if (!isPopup) {
-      $('#book-info-modal').modal('hide');
-    }
-    else {
-      hash = hash.substring(0, hash.length - 6);
-    }
-    if (['look', 'listen', 'learn'].indexOf(hash) === -1) {
-      hash = decodeURI(hash);
-      t.search(hash).draw();
-    }
-  }
-
-  $('#book-info-modal').on('hidden.bs.modal', function (e) {
-    window.location.hash = window.location.hash.substring(1).replace(/\/popup/g, "");
-  });
-  
 
   var APlayerObject = new APlayer({
     element: document.getElementById('audioplayer'),
@@ -377,6 +363,7 @@ $(document).ready(function() {
 
   function setInitialSearchValue() {
     var hash = window.location.hash.substring(1);
+    hash = decodeURIComponent(hash);
     if (hash.length > 0 && ['look', 'listen', 'learn'].indexOf(hash) === -1) {
       t.search(hash).draw();
       return
