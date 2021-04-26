@@ -15,7 +15,7 @@ $(document).ready(function() {
           'cache': true
         },
         'deferRender': true,
-        'scrollY': 'calc(100vh - 195px)',
+        'scrollY': window.innerWidth >= 928 ? 'calc(100vh - 195px)' : 'calc(100vh - 234px)',
         'scroller': true,
         'responsive': true,
         'processing': true,
@@ -66,7 +66,42 @@ $(document).ready(function() {
                          + endButtonGroup;
                 }
             }
-        ]
+        ],
+        initComplete: function () {
+          var searchLabel = $("#books_filter label");
+          $("#books_length").parent().remove();
+          $("#books_filter").parent().addClass("col-md-12").removeClass("col-md-6");
+          this.api().columns().every( function () {
+              var column = this;
+              if (![1, 3].includes(column.index())) {
+                return;
+              }
+              var select = $('<select class="form-control form-control-sm"><option value=""></option></select>')
+                  .on( 'change', function () {
+                      var val = $.fn.dataTable.util.escapeRegex(
+                          $(this).val()
+                      );
+
+                      column
+                          .search( val ? regexWithEllipsis(val) : '', true, false )
+                          .draw();
+                  } );
+              
+              var label = $('<label>' + $(column.header()).text().trim() + ": </label>").insertBefore(searchLabel);
+              var span = $('<span style="display: inline-block; padding-right: 8px;" />').appendTo(label);
+              select.appendTo(span);
+
+              var splitValues = column.data().map(function (data) { return data.split(",").map(function(d) {return d.trim();}) });
+              splitValues = splitValues.reduce(function (valueList, current) { return current.concat(valueList) }, []);
+              splitValues = splitValues.map(function (data) {return addEllipsis(data, 30);});
+              splitValues = splitValues.filter(function (data) { return data !== ""});
+              splitValues = [...new Set(splitValues)];
+              splitValues.sort();
+              splitValues.forEach( function ( d ) {
+                  select.append( '<option value="'+d+'">'+d+'</option>' )
+              } );
+          } );
+        }
     });
   t.on('search.dt', function (ev) {
     if (window.location.hash.length > 1) {
@@ -395,6 +430,20 @@ $(document).ready(function() {
         return;
       }
     }
+  }
+
+  function addEllipsis(str, maxLength) {
+    if (str.length > maxLength) {
+      str = str.substring(0, maxLength - 3) + "...";
+    }
+    return str;
+  }
+
+  function regexWithEllipsis(val) {
+    if (val.substring(val.length - 6) === "\\.\\.\\.") {
+      return val.substring(0, val.length - 6);
+    }
+    return val;
   }
 
   setInitialSearchValue();
