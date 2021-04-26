@@ -15,7 +15,7 @@ $(document).ready(function() {
           'cache': true
         },
         'deferRender': true,
-        'scrollY': window.innerWidth >= 928 ? 'calc(100vh - 195px)' : 'calc(100vh - 234px)',
+        'scrollY': window.innerWidth >= 928 ? 'calc(100vh - 195px)' : window.innerWidth < 578 ? 'calc(100vh - 273px)' : 'calc(100vh - 234px)',
         'scroller': true,
         'responsive': true,
         'processing': true,
