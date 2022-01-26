@@ -38,3 +38,6 @@ jobs:
         run: |
           cd catalog
           python fetch.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
