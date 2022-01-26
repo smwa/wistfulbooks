@@ -17,6 +17,13 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     
+      - name: study
+        run: |
+          pwd
+          ls
+          echo $GITHUB_WORKSPACE
+          ls $GITHUB_WORKSPACE
+    
       - name: Setup Python
         uses: actions/setup-python@v2.3.1
         with:
