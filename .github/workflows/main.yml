@@ -16,9 +16,9 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    
-      - name: study
-        run: ls $GITHUB_WORKSPACE
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
       - name: Setup Python
         uses: actions/setup-python@v2.3.1
@@ -27,14 +27,10 @@ jobs:
           cache: 'pip'
           cache-dependency-path: '**/catalog/requirements.txt'
           architecture: 'x64'
-
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
       
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
           cd $GITHUB_WORKSPACE
           cd catalog
-          python3 -m pip install -r requirements.txt
           python3 fetch.py
