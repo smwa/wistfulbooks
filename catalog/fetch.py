@@ -237,10 +237,10 @@ def buildTotalIndex(bookDir):
 
 def filenameToBook(filename):
     with open(filename, 'r') as handle:
+        book = json.load(handle)
         copyright_year = None
         if "copyright_year" in book:
           copyright_year = book["copyright_year"]
-        book = json.load(handle)
         bookPath = os.path.splitext(os.path.basename(filename))[0]
         return [
             book['title'],
