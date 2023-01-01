@@ -248,7 +248,7 @@ def filenameToBook(filename):
             "{:.0f}".format(book['duration'] / 60),
             ", ".join(book['genres']),
             book['language'],
-            book['copyright_year'],
+            copyright_year,
             bookPath
         ]
 
