@@ -41,5 +41,5 @@ jobs:
           cd catalog
           python fetch.py
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+      - name: Commit and Push
+        uses: EndBug/add-and-commit@v9
